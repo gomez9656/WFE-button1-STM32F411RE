@@ -1,8 +1,8 @@
 /*
- *
- *	This project is to use the Sleep on Exit mode after exiting an ISR.
- *	We set the Timer 3 to interrupt every 10ms and send some data over the USART2,
- *	and after that, MCU will enter in sleep mode
+ * This project is to test the WFI mode. We are using button 1(blue button) in
+ * STM32F411RE Nucleo board to wake up the processor from sleep mode. After
+ * pressing button 1, USART2 will send a message over the serial monitor, and
+ * we can see it using TeraTerm
  */
 
 #include "stm32f4xx.h"
@@ -15,11 +15,10 @@
 void SystemCoreClockConfig(uint8_t clock_freq);
 void Error_handler(void);
 void GPIO_Init(void);
-void TIMER3_Init(void);
 void UART2_Init(void);
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_PIN);
+void GPIO_AnalogConfig(void);
 
-TIM_HandleTypeDef htimer3;
 UART_HandleTypeDef huart2; //Handle of UART 2
 extern uint8_t some_data[];
 
@@ -36,43 +35,18 @@ int main(){
 
 	UART2_Init();
 
-	TIMER3_Init();
 
-	//SCB->SCR |= ( 1 << 1); //Set SLEEOPONEXIT bit to 1
-	HAL_PWR_EnableSleepOnExit();
-	/*
-	 * Start with fresh status register to avoid false interrupts
-	 */
-	TIM3->SR = 0;
-
-	//Start the timer in interrupt mode
-	HAL_TIM_Base_Start_IT(&htimer3);
 
 	while(1);
 
 	return 0;
 }
 
-
-void TIMER3_Init(void){
-
-	//High level initialization of the TIMER 3 for 10ms if using HSI
-	htimer3.Instance = TIM3;
-	htimer3.Init.Period = 4999;
-	htimer3.Init.Prescaler = 39 - 1;
-
-	if( HAL_TIM_Base_Init(&htimer3) != HAL_OK )
-		{
-			Error_handler();
-		}
-}
-
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_PIN){
 
 	if ( HAL_UART_Transmit(&huart2, (uint8_t*)some_data, (uint16_t)strlen((char*)some_data), HAL_MAX_DELAY) != HAL_OK){
-			 Error_handler();
-		 }
+				 Error_handler();
+	}
 }
 
 /*
@@ -161,6 +135,32 @@ void SystemCoreClockConfig(uint8_t clock_freq){
 		HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
 
+void GPIO_AnalogConfig(void)
+{
+	GPIO_InitTypeDef GpioA, GpioC;
+
+	uint32_t gpio_pins = GPIO_PIN_0 | GPIO_PIN_1 |GPIO_PIN_4 | \
+						 GPIO_PIN_5 | GPIO_PIN_6 |GPIO_PIN_7 |\
+						 GPIO_PIN_8 | GPIO_PIN_9 |GPIO_PIN_10 |\
+						 GPIO_PIN_11 | GPIO_PIN_12 |GPIO_PIN_13 | \
+						 GPIO_PIN_14 | GPIO_PIN_15;
+
+	GpioA.Pin = gpio_pins;
+	GpioA.Mode = GPIO_MODE_ANALOG;
+	HAL_GPIO_Init(GPIOA, &GpioA);
+
+	gpio_pins = GPIO_PIN_0 | GPIO_PIN_1 |GPIO_PIN_2|  \
+			    GPIO_PIN_3 | GPIO_PIN_4 |  GPIO_PIN_5 | \
+			    GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | \
+			    GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | \
+			    GPIO_PIN_12 | GPIO_PIN_14 | GPIO_PIN_15;
+
+	GpioC.Pin = gpio_pins;
+	GpioC.Mode = GPIO_MODE_ANALOG;
+	HAL_GPIO_Init(GPIOC, &GpioC);
+
+}
+
 void UART2_Init(void){
 
 	//1. Linking handle struct to base address
@@ -186,11 +186,23 @@ void UART2_Init(void){
 void GPIO_Init(void){
 
 	__HAL_RCC_GPIOA_CLK_ENABLE();
-	GPIO_InitTypeDef ledgpio;
-	ledgpio.Pin = GPIO_PIN_5;
-	ledgpio.Mode = GPIO_MODE_OUTPUT_PP;
-	ledgpio.Pull = GPIO_NOPULL;
-	HAL_GPIO_Init(GPIOA, &ledgpio);
+	__HAL_RCC_GPIOC_CLK_ENABLE();
+
+	__HAL_RCC_GPIOA_CLK_SLEEP_DISABLE();
+
+
+	GPIO_InitTypeDef buttongpio;
+
+	buttongpio.Pin = GPIO_PIN_13;//This pin will wake up the processor from sleep mode
+	buttongpio.Mode = GPIO_MODE_IT_FALLING;
+	buttongpio.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(GPIOC, &buttongpio);
+
+	HAL_NVIC_SetPriority(EXTI15_10_IRQn, 15, 0);
+	HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
 }
 
 void Error_handler(void){

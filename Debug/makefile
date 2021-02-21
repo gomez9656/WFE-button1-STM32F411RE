@@ -28,13 +28,13 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: Timer3-USART2-SleepOnExit.elf
+all: WFE-button.elf
 
 # Tool invocations
-Timer3-USART2-SleepOnExit.elf: $(OBJS) $(USER_OBJS) ../STM32F411RETx_FLASH.ld
+WFE-button.elf: $(OBJS) $(USER_OBJS) ../STM32F411RETx_FLASH.ld
 	@echo 'Building target: $@'
 	@echo 'Invoking: MCU GCC Linker'
-	arm-none-eabi-gcc -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -specs=nosys.specs -specs=nano.specs -T"../STM32F411RETx_FLASH.ld" -Wl,-Map=output.map -Wl,--gc-sections -o "Timer3-USART2-SleepOnExit.elf" @"objects.list" $(USER_OBJS) $(LIBS) -lm
+	arm-none-eabi-gcc -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -specs=nosys.specs -specs=nano.specs -T"../STM32F411RETx_FLASH.ld" -Wl,-Map=output.map -Wl,--gc-sections -o "WFE-button.elf" @"objects.list" $(USER_OBJS) $(LIBS) -lm
 	@echo 'Finished building target: $@'
 	@echo ' '
 	$(MAKE) --no-print-directory post-build
@@ -46,8 +46,8 @@ clean:
 
 post-build:
 	-@echo 'Generating hex and Printing size information:'
-	arm-none-eabi-objcopy -O ihex "Timer3-USART2-SleepOnExit.elf" "Timer3-USART2-SleepOnExit.hex"
-	arm-none-eabi-size "Timer3-USART2-SleepOnExit.elf"
+	arm-none-eabi-objcopy -O ihex "WFE-button.elf" "WFE-button.hex"
+	arm-none-eabi-size "WFE-button.elf"
 	-@echo ' '
 
 .PHONY: all clean dependents

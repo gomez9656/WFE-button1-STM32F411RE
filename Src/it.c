@@ -5,7 +5,6 @@
  *      Author: PC
  */
 #include "main.h"
-extern TIM_HandleTypeDef htimer3;
 extern UART_HandleTypeDef huart2;
 
 
@@ -16,9 +15,9 @@ void SysTick_Handler(void){
 
 }
 
-void TIM3_IRQHandler(){
+void EXTI15_10_IRQHandler(void){
 
-	HAL_TIM_IRQHandler(&htimer3);
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
 }
 
 void USART2_IRQHandler(void)
