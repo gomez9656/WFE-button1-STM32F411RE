@@ -37,7 +37,12 @@ int main(){
 
 
 
-	while(1);
+	while(1){
+
+		//go to sleep
+		__WFI();
+		//WFI resumes here after waking up
+	}
 
 	return 0;
 }
@@ -135,6 +140,11 @@ void SystemCoreClockConfig(uint8_t clock_freq){
 		HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
 
+
+/*
+ *	This function helps us reduce the current consumption by establishing the
+ *	other pins we are not using, in Analog mode. It is not mandatory
+ */
 void GPIO_AnalogConfig(void)
 {
 	GPIO_InitTypeDef GpioA, GpioC;
