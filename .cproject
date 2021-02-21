@@ -229,4 +229,5 @@
 			<resource resourceType="PROJECT" workspacePath="Timer3-USART2-SleepOnExit"/>
 		</configuration>
 	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 </cproject>

@@ -40,7 +40,7 @@ int main(){
 	while(1){
 
 		//go to sleep
-		__WFI();
+		__WFI(); //You can call this function whenever you want
 		//WFI resumes here after waking up
 	}
 
