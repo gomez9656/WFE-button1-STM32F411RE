@@ -1,8 +1,8 @@
 /*
- * main.c
  *
- *  Created on: 23/01/2021
- *      Author: PC
+ *	This project is to use the Sleep on Exit mode after exiting an ISR.
+ *	We set the Timer 3 to interrupt every 10ms and send some data over the USART2,
+ *	and after that, MCU will enter in sleep mode
  */
 
 #include "stm32f4xx.h"
@@ -38,6 +38,8 @@ int main(){
 
 	TIMER3_Init();
 
+	//SCB->SCR |= ( 1 << 1); //Set SLEEOPONEXIT bit to 1
+	HAL_PWR_EnableSleepOnExit();
 	/*
 	 * Start with fresh status register to avoid false interrupts
 	 */
@@ -57,7 +59,7 @@ void TIMER3_Init(void){
 	//High level initialization of the TIMER 3 for 10ms if using HSI
 	htimer3.Instance = TIM3;
 	htimer3.Init.Period = 4999;
-	htimer3.Init.Prescaler = 100 - 1;
+	htimer3.Init.Prescaler = 39 - 1;
 
 	if( HAL_TIM_Base_Init(&htimer3) != HAL_OK )
 		{
